@@ -1,6 +1,6 @@
 import cheerio from "cheerio";
 import fetch from "node-fetch";
-import { SCHEDULE_URL } from "../constants";
+import { NEWS_URL, SCHEDULE_URL } from "../constants";
 
 interface ScheduleDataRecord {
   name: string;
@@ -13,7 +13,13 @@ export interface ScheduleRecord {
   data?: ScheduleDataRecord[];
 }
 
-export const scrapeLinks = async () => {
+export interface NewsRecord {
+  date: string;
+  title: string;
+  link: string;
+}
+
+export const getScheduleLinks = async (): Promise<ScheduleRecord[]> => {
   let scheduleData: ScheduleRecord[] = [];
 
   const response = await fetch(SCHEDULE_URL);
@@ -48,4 +54,25 @@ export const scrapeLinks = async () => {
     }
   });
   return scheduleData;
+};
+
+export const getNewsLinks = async (
+  url: string = NEWS_URL
+): Promise<NewsRecord[]> => {
+  const response = await fetch(url);
+  const $ = cheerio.load(await response.text());
+  let newsArr: NewsRecord[] = [];
+  $(".view-content")
+    .first()
+    .children()
+    .each((_, el) => {
+      let date = $(el).find(".views-field.views-field-created").text().trim();
+      let title = $(el).find(".views-field.views-field-title").text().trim();
+      let link = $(el)
+        .find(".views-field.views-field-title")
+        .find("a")
+        .attr("href");
+      newsArr.push({ date, title, link: `http://lutsk-ntu.com.ua/${link}` });
+    });
+  return newsArr;
 };
