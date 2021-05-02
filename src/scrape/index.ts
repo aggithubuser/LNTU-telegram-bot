@@ -29,7 +29,7 @@ export const getScheduleLinks = async (): Promise<ScheduleRecord[]> => {
     let text = $(el).text();
     let href = $(el).children().attr("href");
     let linksArr: ScheduleDataRecord[] = [];
-    let re = /(\w*)\?/;
+    // let re = /(\w*)\?/;
     let reDash = /([\w,-]*)\?/;
     let reId = /id=(\w+)/;
     if (text.toLowerCase().includes("факультет")) {
@@ -39,17 +39,20 @@ export const getScheduleLinks = async (): Promise<ScheduleRecord[]> => {
       linksArr.push(
         {
           name: elFirstChild.text(),
+          // @ts-ignore
           id: elFirstChild.children("a").attr("href")?.match(reDash)[1],
           link: elFirstChild.children("a").attr("href"),
         },
         {
           name: elSecondChild.text(),
+          // @ts-ignore
           id: elSecondChild.children("a").attr("href")?.match(reDash)[1],
           link: elSecondChild.children("a").attr("href"),
         }
       );
       scheduleData.push({ name: text, data: linksArr });
     } else if (text.toLowerCase().includes("відділ")) {
+      // @ts-ignore
       linksArr.push({ name: text, id: href?.match(reId)[1], link: href });
       scheduleData.push({ name: text, data: linksArr });
     }

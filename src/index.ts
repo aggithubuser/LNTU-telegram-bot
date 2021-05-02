@@ -182,7 +182,7 @@ bot.hears(MAIN_KEYBOARD.SCHEDULE_WEEK, async (ctx) => {
 });
 
 bot.action(new RegExp(/\w/), async (ctx) => {
-  console;
+  // @ts-ignore
   let items = await keyboard(ctx.update.callback_query.data as any, ctx);
   await ctx.editMessageText(ctx.filesInfo ? ctx.filesInfo : ctx.currentFolder, {
     parse_mode: "HTML",
