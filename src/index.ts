@@ -1,6 +1,6 @@
 import { formatRelative, subDays } from "date-fns";
 import { uk } from "date-fns/locale";
-import express from "express";
+import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import { Context, Markup, Telegraf } from "telegraf";
 import { InlineKeyboardButton } from "telegraf/typings/core/types/typegram";
@@ -183,7 +183,7 @@ bot.hears(MAIN_KEYBOARD.SCHEDULE_WEEK, async (ctx) => {
 
 bot.action(new RegExp(/\w/), async (ctx) => {
   console;
-  let items = await keyboard(ctx.update.callback_query.data as string, ctx);
+  let items = await keyboard(ctx.update.callback_query.data as any, ctx);
   await ctx.editMessageText(ctx.filesInfo ? ctx.filesInfo : ctx.currentFolder, {
     parse_mode: "HTML",
   });
@@ -194,11 +194,11 @@ bot.action(new RegExp(/\w/), async (ctx) => {
 bot.telegram.setWebhook(`${process.env.WEB}/${process.env.BOT_TOKEN}`);
 
 const app = express();
-app.get("/", (req: Request, res: Response) => res.send("Hello World!"));
+app.get("/", (_req: Request, res: Response) => res.send("Hello World!"));
 // Set the bot API endpoint
 app.use(bot.webhookCallback(process.env.WEB));
 app.listen(process.env.PORT, () => {
-  console.log("Example app listening on port 3000!");
+  console.log(`Example app listening on port ${process.env.PORT}!`);
 });
 
 // bot.launch();

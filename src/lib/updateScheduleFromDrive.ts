@@ -8,7 +8,7 @@ export const queue = async (list: Folder) => {
   return stack;
 };
 
-export const getFolder = async (q: any) => {
+export const getFolder = async (q: string[]) => {
   if (q.length != 0) {
     let latest = q[q.length - 1];
     let res = await folderContent(latest);
@@ -17,7 +17,7 @@ export const getFolder = async (q: any) => {
     await mapContentToCollection(res);
     return getFolder(q);
   }
-  return true;
+  return;
 };
 
 const mapContentToCollection = async (content: Folder) => {
