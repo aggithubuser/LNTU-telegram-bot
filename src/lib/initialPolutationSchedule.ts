@@ -7,7 +7,6 @@ import mongoose from "mongoose";
 export const initialPolutationSchedule = async () => {
   let links = await getScheduleLinks();
   let parent;
-  let schedule;
   for (const link of links) {
     parent = new Schedule({
       _id: new mongoose.Types.ObjectId(),
