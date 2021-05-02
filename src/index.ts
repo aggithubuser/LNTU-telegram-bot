@@ -1,24 +1,21 @@
+import { formatRelative, subDays } from "date-fns";
+import { uk } from "date-fns/locale";
+import express from "express";
+import mongoose from "mongoose";
 import { Context, Markup, Telegraf } from "telegraf";
+import { InlineKeyboardButton } from "telegraf/typings/core/types/typegram";
 import {
   BACK_PREFIX,
   CALLBACK_KEYBOARD,
   HELPER_TEXT,
   MAIN_KEYBOARD,
 } from "./constants";
-import mongoose from "mongoose";
-import { Schedule } from "./db/models/schedule";
-import { InlineKeyboardButton } from "telegraf/typings/core/types/typegram";
-import { folderContent } from "./driveApi";
-import { getNewsLinks, getScheduleLinks } from "./scrape";
-import { formatRelative, subDays } from "date-fns";
-import { uk } from "date-fns/locale";
 import { studyWeek } from "./date";
-import { initialPolutationSchedule } from "./lib/initialPolutationSchedule";
-import { updateSchedule } from "./lib/updateSchedule";
-import { updateScheduleFromDrive } from "./lib/updateScheduleFromDrive";
+import { Schedule } from "./db/models/schedule";
+import { folderContent } from "./driveApi";
 import { log } from "./lib/log";
+import { getNewsLinks } from "./scrape";
 
-// mongoose.connect(process.env.MONGO as string, {
 mongoose.connect(process.env.MONGO_REMOTE as string, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -49,34 +46,6 @@ export interface MyContext extends Context {
   folderId: string | undefined;
   newsDates: string | undefined;
 }
-
-// const keyboard = async (data = await getScheduleLinks()) => {
-//   let keyboardArr: any[] = [];
-// let links = await getScheduleLinks();
-
-// links.map(async (item, i) => {
-//   console.log(item.name);
-//   console.log(item.data);
-//   const parent = new Schedule({
-//     _id: new mongoose.Types.ObjectId(),
-//     name: item.name,
-//   }).save();
-
-//   const parentId = await parent;
-//   item.data.map((data) => {
-//     new Schedule({
-//       _id: new mongoose.Types.ObjectId(),
-//       name: data.name,
-//       link: data.link,
-//       folderId: data.id,
-//       parent: parentId.name,
-//     }).save();
-//   });
-
-//     keyboardArr.push([Markup.button.callback(item.name, `ind:${i}`)]);
-//   });
-//   return data;
-// };
 
 const keyboard = async (query: any, ctx?: any) => {
   let items;
@@ -221,7 +190,17 @@ bot.action(new RegExp(/\w/), async (ctx) => {
   log(ctx, false);
 });
 
-bot.launch();
+bot.telegram.setWebhook(`${process.env.WEB}/${bot.secretPathComponent()}`);
 
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
+const app = express();
+app.get("/", (req: Request, res: Response) => res.send("Hello World!"));
+// Set the bot API endpoint
+app.use(bot.webhookCallback(process.env.WEB));
+app.listen(process.env.PORT, () => {
+  console.log("Example app listening on port 3000!");
+});
+
+// bot.launch();
+
+// process.once("SIGINT", () => bot.stop("SIGINT"));
+// process.once("SIGTERM", () => bot.stop("SIGTERM"));
