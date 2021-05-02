@@ -1,15 +1,25 @@
 import { Context, Markup, Telegraf } from "telegraf";
-import { BACK_PREFIX, CALLBACK_KEYBOARD, MAIN_KEYBOARD } from "./constants";
+import {
+  BACK_PREFIX,
+  CALLBACK_KEYBOARD,
+  HELPER_TEXT,
+  MAIN_KEYBOARD,
+} from "./constants";
 import mongoose from "mongoose";
 import { Schedule } from "./db/models/schedule";
 import { InlineKeyboardButton } from "telegraf/typings/core/types/typegram";
 import { folderContent } from "./driveApi";
-import { getNewsLinks } from "./scrape";
+import { getNewsLinks, getScheduleLinks } from "./scrape";
 import { formatRelative, subDays } from "date-fns";
 import { uk } from "date-fns/locale";
 import { studyWeek } from "./date";
+import { initialPolutationSchedule } from "./lib/initialPolutationSchedule";
+import { updateSchedule } from "./lib/updateSchedule";
+import { updateScheduleFromDrive } from "./lib/updateScheduleFromDrive";
+import { log } from "./lib/log";
 
-mongoose.connect(process.env.MONGO as string, {
+// mongoose.connect(process.env.MONGO as string, {
+mongoose.connect(process.env.MONGO_REMOTE as string, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useCreateIndex: true,
@@ -18,23 +28,19 @@ mongoose.connect(process.env.MONGO as string, {
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
-db.once("open", function () {
+db.once("open", async () => {
   console.log("GREAT");
+  // initialPolutationSchedule();
+  // updateScheduleFromDrive(process.env.DRIVE_ID);
+  // updateSchedule(process.env.DRIVE_ID);
 });
-
-// const schedule = new Schedule({
-//   _id: new mongoose.Types.ObjectId(),
-//   name: "name",
-//   link: "lin",
-//   folderId: "folderId",
-// }).save();
 
 const token = process.env.BOT_TOKEN;
 if (token === undefined) {
   throw new Error("BOT_TOKEN must be provided!");
 }
 
-interface MyContext extends Context {
+export interface MyContext extends Context {
   // will be available under `ctx.myContextProp`
   myContextProp: string;
   prop: any;
@@ -46,26 +52,26 @@ interface MyContext extends Context {
 
 // const keyboard = async (data = await getScheduleLinks()) => {
 //   let keyboardArr: any[] = [];
-//   let links = await getScheduleLinks();
+// let links = await getScheduleLinks();
 
 // links.map(async (item, i) => {
 //   console.log(item.name);
 //   console.log(item.data);
-//   // const parent = new Schedule({
-//   //   _id: new mongoose.Types.ObjectId(),
-//   //   name: item.name,
-//   // }).save();
+//   const parent = new Schedule({
+//     _id: new mongoose.Types.ObjectId(),
+//     name: item.name,
+//   }).save();
 
-//   // const parentId = await parent;
-//   // item.data.map((data) => {
-//   //   new Schedule({
-//   //     _id: new mongoose.Types.ObjectId(),
-//   //     name: data.name,
-//   //     link: data.link,
-//   //     folderId: data.id,
-//   //     parent: parentId.name,
-//   //   }).save();
-//   // });
+//   const parentId = await parent;
+//   item.data.map((data) => {
+//     new Schedule({
+//       _id: new mongoose.Types.ObjectId(),
+//       name: data.name,
+//       link: data.link,
+//       folderId: data.id,
+//       parent: parentId.name,
+//     }).save();
+//   });
 
 //     keyboardArr.push([Markup.button.callback(item.name, `ind:${i}`)]);
 //   });
@@ -86,10 +92,12 @@ const keyboard = async (query: any, ctx?: any) => {
       ctx.folderId = match.folderId;
     }
     mainKeyboard.push([
-      Markup.button.callback("Повернутись", "schedule"),
+      Markup.button.callback("У меню", CALLBACK_KEYBOARD.SCHEDULE),
       Markup.button.callback(
         "Назад",
-        match.parent != null ? match.parent + BACK_PREFIX : "schedule"
+        match.parent != null
+          ? match.parent + BACK_PREFIX
+          : CALLBACK_KEYBOARD.SCHEDULE
       ),
     ]);
     items = await Schedule.find().where({ parent: match._id });
@@ -97,20 +105,19 @@ const keyboard = async (query: any, ctx?: any) => {
     if (items.length != 0) {
       let detailString = "Деталі оновлень розкладу:\n\n";
       for (const i of items) {
-        i.isFile
-          ? (detailString = detailString.concat(
-              `${i.name}\n(оновлено ${formatRelative(
-                subDays(i.createdAt, 3),
-                new Date(),
-                {
-                  locale: uk,
-                }
-              )})\n\n`
-            ))
-          : "";
+        detailString = detailString.concat(
+          `<b>${i.name}</b>\n(<i>оновлено ${formatRelative(
+            subDays(i.serverUpdatedAt ? i.serverUpdatedAt : i.createdAt, 0),
+            new Date(),
+            {
+              locale: uk,
+            }
+          )}</i>)\n\n`
+        );
+        // : "";
         mainKeyboard.push([
           i.isFile
-            ? Markup.button.url(i.name as string, i.link)
+            ? Markup.button.url(i.name as string, i.link as string)
             : Markup.button.callback(i.name as string, i._id),
         ]);
         ctx.filesInfo = detailString;
@@ -121,17 +128,21 @@ const keyboard = async (query: any, ctx?: any) => {
       let drive = await folderContent(ctx.folderId);
       for (const i of drive.files) {
         if (match) {
+          let isFile = i.mimeType != "application/vnd.google-apps.folder";
+          console.log(i);
           let item = await new Schedule({
             _id: new mongoose.Types.ObjectId(),
             name: i.name,
             link: i.webViewLink,
-            isFile: i.mimeType != "application/vnd.google-apps.folder",
+            isFile,
             folderId: i.id,
             parent: match._id,
+            serverCreatedAt: i.createdTime,
+            serverUpdatedAt: i.modifiedTime,
           }).save();
           mainKeyboard.push([
-            i.isFile
-              ? Markup.button.url(i.name as string, i.link)
+            isFile
+              ? Markup.button.url(i.name as string, i.webViewLink)
               : Markup.button.callback(i.name as string, item._id),
           ]);
         }
@@ -143,63 +154,71 @@ const keyboard = async (query: any, ctx?: any) => {
 
 const bot = new Telegraf<MyContext>(token);
 
-bot.command("start", (ctx) =>
+bot.command("start", (ctx) => {
   ctx.reply(
-    MAIN_KEYBOARD.PICK_MENU,
-    Markup.inlineKeyboard([
-      [
-        Markup.button.callback(
-          MAIN_KEYBOARD.NEWS_KEYBOARD,
-          CALLBACK_KEYBOARD.NEWS
-        ),
-      ],
-      [
-        Markup.button.callback(
-          MAIN_KEYBOARD.SCHEDULE_KEYBOARD,
-          CALLBACK_KEYBOARD.SCHEDULE
-        ),
-      ],
-      [
-        Markup.button.callback(
-          MAIN_KEYBOARD.SCHEDULE_WEEK,
-          CALLBACK_KEYBOARD.WEEK
-        ),
-      ],
+    `Привіт, ${ctx.message.from.first_name}!`,
+    Markup.keyboard([
+      Markup.button.text(MAIN_KEYBOARD.NEWS_KEYBOARD),
+      Markup.button.text(MAIN_KEYBOARD.SCHEDULE_KEYBOARD),
+      Markup.button.text(MAIN_KEYBOARD.SCHEDULE_WEEK),
     ])
-  )
-);
+  );
+  log(ctx);
+});
+bot.command("help", (ctx) => {
+  ctx.reply(HELPER_TEXT.HELP);
+});
 
-bot.action(CALLBACK_KEYBOARD.NEWS, async (ctx) => {
+bot.hears(MAIN_KEYBOARD.NEWS_KEYBOARD, async (ctx) => {
   let keyboard: InlineKeyboardButton[][] = [];
   let news = await getNewsLinks();
 
   news.map((i) => {
     keyboard.push([Markup.button.url(i.title, i.link)]);
   });
-  await ctx.editMessageText(
-    `Новини від  ${news[news.length - 1].date}  по  ${news[0].date}`
+
+  await ctx.reply(
+    `Новини від  ${news[news.length - 1].date}  по  ${news[0].date}`,
+    Markup.inlineKeyboard(keyboard)
   );
-  await ctx.editMessageReplyMarkup({ inline_keyboard: keyboard });
+  log(ctx);
 });
 
 bot.action(CALLBACK_KEYBOARD.SCHEDULE, async (ctx) => {
   let main = await Schedule.find().where({ parent: null });
   let mainKeyboard: InlineKeyboardButton[][] = [];
-  await ctx.editMessageText(MAIN_KEYBOARD.PICK_MENU);
   main.forEach((i) => {
     return mainKeyboard.push([Markup.button.callback(i.name as string, i._id)]);
   });
-  ctx.editMessageReplyMarkup({ inline_keyboard: mainKeyboard });
+  await ctx.editMessageText(HELPER_TEXT.SCHEDULE_PICKER);
+  await ctx.editMessageReplyMarkup({ inline_keyboard: mainKeyboard });
+  log(ctx, false);
 });
 
-bot.action(CALLBACK_KEYBOARD.WEEK, async (ctx) => {
+bot.hears(MAIN_KEYBOARD.SCHEDULE_KEYBOARD, async (ctx) => {
+  let main = await Schedule.find().where({ parent: null });
+  let mainKeyboard: InlineKeyboardButton[][] = [];
+  // await ctx.reply(MAIN_KEYBOARD.PICK_MENU);
+  main.forEach((i) => {
+    return mainKeyboard.push([Markup.button.callback(i.name as string, i._id)]);
+  });
+  await ctx.reply(MAIN_KEYBOARD.PICK_MENU, Markup.inlineKeyboard(mainKeyboard));
+  // await ctx.editMessageReplyMarkup({ inline_keyboard: mainKeyboard });
+  log(ctx, false);
+});
+
+bot.hears(MAIN_KEYBOARD.SCHEDULE_WEEK, async (ctx) => {
   ctx.reply(studyWeek(), { parse_mode: "HTML" });
+  log(ctx);
 });
 
 bot.action(new RegExp(/\w/), async (ctx) => {
   let items = await keyboard(ctx.update.callback_query.data as string, ctx);
-  await ctx.editMessageText(ctx.filesInfo ? ctx.filesInfo : ctx.currentFolder);
+  await ctx.editMessageText(ctx.filesInfo ? ctx.filesInfo : ctx.currentFolder, {
+    parse_mode: "HTML",
+  });
   await ctx.editMessageReplyMarkup({ inline_keyboard: items });
+  log(ctx, false);
 });
 
 bot.launch();

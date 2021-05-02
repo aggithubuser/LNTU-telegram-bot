@@ -1,6 +1,6 @@
 import cheerio from "cheerio";
 import fetch from "node-fetch";
-import { NEWS_URL, SCHEDULE_URL } from "../constants";
+import { MAIN_URL, NEWS_URL, SCHEDULE_URL } from "../constants";
 
 interface ScheduleDataRecord {
   name: string;
@@ -30,6 +30,7 @@ export const getScheduleLinks = async (): Promise<ScheduleRecord[]> => {
     let href = $(el).children().attr("href");
     let linksArr: ScheduleDataRecord[] = [];
     let re = /(\w*)\?/;
+    let reDash = /([\w,-]*)\?/;
     let reId = /id=(\w+)/;
     if (text.toLowerCase().includes("факультет")) {
       let elFirstChild = $(".MsoNormal span").eq(i + 1);
@@ -38,12 +39,12 @@ export const getScheduleLinks = async (): Promise<ScheduleRecord[]> => {
       linksArr.push(
         {
           name: elFirstChild.text(),
-          id: elFirstChild.children("a").attr("href")?.match(re)[1],
+          id: elFirstChild.children("a").attr("href")?.match(reDash)[1],
           link: elFirstChild.children("a").attr("href"),
         },
         {
           name: elSecondChild.text(),
-          id: elSecondChild.children("a").attr("href")?.match(re)[1],
+          id: elSecondChild.children("a").attr("href")?.match(reDash)[1],
           link: elSecondChild.children("a").attr("href"),
         }
       );
@@ -72,7 +73,7 @@ export const getNewsLinks = async (
         .find(".views-field.views-field-title")
         .find("a")
         .attr("href");
-      newsArr.push({ date, title, link: `http://lutsk-ntu.com.ua/${link}` });
+      newsArr.push({ date, title, link: `${MAIN_URL}${link}` });
     });
   return newsArr;
 };

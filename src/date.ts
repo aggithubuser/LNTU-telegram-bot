@@ -20,15 +20,15 @@ export const studyWeek = () => {
   } else {
     if (DATE.date % 2 == 0) {
       if (DATE.month == 7 || DATE.month == 1) {
-        currentWeek = `Сьогодні вихідний!\nНаступний навчальний тиждень це, \n<b>Чисельник</b> <i> ${formatedStartDate} - ${formatedEndDate}</i>`;
+        currentWeek = `Сьогодні вихідний!\nНаступний навчальний тиждень це, \n<b>Чисельник</b>\n<i>${formatedStartDate} - ${formatedEndDate}</i>`;
       } else {
-        currentWeek = `<b>Чисельник</b> <i> ${formatedStartDate} - ${formatedEndDate}</i>`;
+        currentWeek = `<b>Чисельник</b>\n<i>${formatedStartDate} - ${formatedEndDate}</i>`;
       }
     } else if (DATE.date % 2 == 1) {
       if (DATE.month == 7 || DATE.month == 1) {
-        currentWeek = `Сьогодні вихідний!\nНаступний навчальний тиждень це, \n<b>Знаменник</b> <i> ${formatedStartDate} - ${formatedEndDate}</i>`;
+        currentWeek = `Сьогодні вихідний!\nНаступний навчальний тиждень це, \n<b>Знаменник</b>\n<i>${formatedStartDate} - ${formatedEndDate}</i>`;
       } else {
-        currentWeek = `<b>Знаменник</b> <i> ${formatedStartDate} - ${formatedEndDate}</i>`;
+        currentWeek = `<b>Знаменник</b>\n<i>${formatedStartDate} - ${formatedEndDate}</i>`;
       }
     }
   }
