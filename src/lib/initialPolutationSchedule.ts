@@ -19,7 +19,7 @@ export const initialPolutationSchedule = async () => {
         const parentId = await parent;
         console.log("data.link ", data.link);
         console.log("data.id ", data.id);
-        schedule = new Schedule({
+        new Schedule({
           _id: new mongoose.Types.ObjectId(),
           name: data.name,
           link: data.link,

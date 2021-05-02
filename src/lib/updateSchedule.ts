@@ -25,13 +25,11 @@ const populate = async (id: string, parent: string) => {
 
 export const updateSchedule = async () => {
   let folders = await Schedule.find({ parent: { $ne: null } });
-  let i = 0;
   for (const folder of folders) {
-    let driveFolders = await folderContent(folder.folderId);
+    let driveFolders = await folderContent(folder.folderId as string);
     console.log(folder.folderId);
     console.log(folder.parent);
     console.log(driveFolders);
-    i += 1;
     if (driveFolders) {
       for (const d of driveFolders.files) {
         let isFile = d.mimeType != "application/vnd.google-apps.folder";
