@@ -196,7 +196,7 @@ bot.telegram.setWebhook(`${process.env.WEB}/${process.env.BOT_TOKEN}`);
 const app = express();
 app.get("/", (_req: Request, res: Response) => res.send("Hello World!"));
 // Set the bot API endpoint
-app.use(bot.webhookCallback(process.env.WEB));
+app.use(bot.webhookCallback("/" + process.env.WEB));
 app.listen(process.env.PORT, () => {
   console.log(`Example app listening on port ${process.env.PORT}!`);
 });
