@@ -182,6 +182,7 @@ bot.hears(MAIN_KEYBOARD.SCHEDULE_WEEK, async (ctx) => {
 });
 
 bot.action(new RegExp(/\w/), async (ctx) => {
+  console;
   let items = await keyboard(ctx.update.callback_query.data as string, ctx);
   await ctx.editMessageText(ctx.filesInfo ? ctx.filesInfo : ctx.currentFolder, {
     parse_mode: "HTML",
@@ -190,7 +191,7 @@ bot.action(new RegExp(/\w/), async (ctx) => {
   log(ctx, false);
 });
 
-bot.telegram.setWebhook(`${process.env.WEB}/${bot.secretPathComponent()}`);
+bot.telegram.setWebhook(`${process.env.WEB}/${process.env.BOT_TOKEN}`);
 
 const app = express();
 app.get("/", (req: Request, res: Response) => res.send("Hello World!"));
