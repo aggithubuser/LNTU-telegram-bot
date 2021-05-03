@@ -192,17 +192,19 @@ bot.action(new RegExp(/\w/), async (ctx) => {
   log(ctx, false);
 });
 
-// bot.telegram.setWebhook(`${process.env.WEB}/${process.env.BOT_TOKEN}`);
+if (process.env.WEB) {
+  bot.telegram.setWebhook(`${process.env.WEB}/${process.env.BOT_TOKEN}`);
 
-// const app = express();
-// app.get("/", (_req: Request, res: Response) => res.send("Hello World!"));
-// // Set the bot API endpoint
-// app.use(bot.webhookCallback(`/${process.env.BOT_TOKEN}`));
-// app.listen(process.env.PORT, () => {
-//   console.log(`Example app listening on port ${process.env.PORT}!`);
-// });
+  const app = express();
+  app.get("/", (_req: Request, res: Response) => res.send("Hello World!"));
+  // Set the bot API endpoint
+  app.use(bot.webhookCallback(`/${process.env.BOT_TOKEN}`));
+  app.listen(process.env.PORT, () => {
+    console.log(`Example app listening on port ${process.env.PORT}!`);
+  });
+} else {
+  bot.launch();
 
-bot.launch();
-
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
+  process.once("SIGINT", () => bot.stop("SIGINT"));
+  process.once("SIGTERM", () => bot.stop("SIGTERM"));
+}
