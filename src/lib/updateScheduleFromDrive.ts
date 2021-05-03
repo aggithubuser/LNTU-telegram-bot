@@ -22,10 +22,12 @@ export const getFolder = async (q: string[]): Promise<boolean> => {
 
 const mapContentToCollection = async (content: Folder) => {
   for (const i of content.files) {
-    let exists = await Schedule.exists({ folderId: i.id });
+    let exists = await Schedule.findOne({ folderId: i.id });
     let parentExists = await Schedule.findOne({ folderId: i.parents[0] });
-    if (exists) {
-      console.log("Already exists", exists);
+    if (exists != null) {
+      console.log("Already exists", i.name, exists.name);
+      exists.updatedAt = new Date();
+      await exists.save();
     } else {
       new Schedule({
         _id: new mongoose.Types.ObjectId(),

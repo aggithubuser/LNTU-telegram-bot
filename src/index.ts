@@ -14,6 +14,7 @@ import { studyWeek } from "./date";
 import { Schedule } from "./db/models/schedule";
 import { folderContent } from "./driveApi";
 import { log } from "./lib/log";
+import { updateScheduleFromDrive } from "./lib/updateScheduleFromDrive";
 import { getNewsLinks } from "./scrape";
 
 mongoose.connect(process.env.MONGO_REMOTE as string, {
@@ -28,7 +29,7 @@ db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", async () => {
   console.log("GREAT");
   // initialPolutationSchedule();
-  // updateScheduleFromDrive(process.env.DRIVE_ID);
+  updateScheduleFromDrive(process.env.DRIVE_ID as string);
   // updateSchedule(process.env.DRIVE_ID);
 });
 
@@ -191,17 +192,17 @@ bot.action(new RegExp(/\w/), async (ctx) => {
   log(ctx, false);
 });
 
-bot.telegram.setWebhook(`${process.env.WEB}/${process.env.BOT_TOKEN}`);
+// bot.telegram.setWebhook(`${process.env.WEB}/${process.env.BOT_TOKEN}`);
 
-const app = express();
-app.get("/", (_req: Request, res: Response) => res.send("Hello World!"));
-// Set the bot API endpoint
-app.use(bot.webhookCallback(`/${process.env.BOT_TOKEN}`));
-app.listen(process.env.PORT, () => {
-  console.log(`Example app listening on port ${process.env.PORT}!`);
-});
+// const app = express();
+// app.get("/", (_req: Request, res: Response) => res.send("Hello World!"));
+// // Set the bot API endpoint
+// app.use(bot.webhookCallback(`/${process.env.BOT_TOKEN}`));
+// app.listen(process.env.PORT, () => {
+//   console.log(`Example app listening on port ${process.env.PORT}!`);
+// });
 
-// bot.launch();
+bot.launch();
 
-// process.once("SIGINT", () => bot.stop("SIGINT"));
-// process.once("SIGTERM", () => bot.stop("SIGTERM"));
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
