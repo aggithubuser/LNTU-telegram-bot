@@ -37,8 +37,8 @@ const mapContentToCollection = async (content: Folder) => {
         folderId: i.id,
         parent:
           i.parents[0] === (process.env.DRIVE_ID as string)
-            ? parentExists?._id
-            : null,
+            ? null
+            : parentExists?._id,
         serverCreatedAt: i.createdTime,
         serverUpdatedAt: i.modifiedTime,
       }).save();
