@@ -3,7 +3,6 @@
 
 ###### @LNTU_Student_bot http://t.me/LNTU_Student_bot
 
-Стак:
 * Typescript
 * [Telegraf](https://github.com/telegraf/telegraf)
 * MongoDB
