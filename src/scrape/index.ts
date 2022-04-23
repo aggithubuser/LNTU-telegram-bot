@@ -66,17 +66,14 @@ export const getNewsLinks = async (
   const response = await fetch(url);
   const $ = cheerio.load(await response.text());
   let newsArr: NewsRecord[] = [];
-  $(".view-content")
-    .first()
-    .children()
-    .each((_, el) => {
-      let date = $(el).find(".views-field.views-field-created").text().trim();
-      let title = $(el).find(".views-field.views-field-title").text().trim();
-      let link = $(el)
-        .find(".views-field.views-field-title")
-        .find("a")
-        .attr("href");
-      newsArr.push({ date, title, link: `${MAIN_URL}${link}` });
-    });
+  $(".post-block").each((_, el) => {
+    let titleEl = $(el).find(".post-title");
+    let linkToNews = titleEl.children("a").attr("href");
+    let title = titleEl.children("a").children("span").text();
+      newsArr.push({ 
+        date: $(el).find(".post-created").text().trim(),
+        title,
+        link: `${MAIN_URL}${linkToNews}` });
+  })
   return newsArr;
 };

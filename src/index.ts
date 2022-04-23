@@ -14,7 +14,7 @@ import { studyWeek } from "./date";
 import { Schedule } from "./db/models/schedule";
 import { folderContent } from "./driveApi";
 import { log } from "./lib/log";
-import { updateScheduleFromDrive } from "./lib/updateScheduleFromDrive";
+import { updateScheduleFromDrive, cleanupSchedule } from "./lib/updateScheduleFromDrive";
 import { getNewsLinks } from "./scrape";
 
 mongoose.connect(process.env.MONGO_REMOTE as string, {
@@ -29,7 +29,9 @@ db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", async () => {
   console.log("GREAT");
   // initialPolutationSchedule();
-  updateScheduleFromDrive(process.env.DRIVE_ID as string);
+  await updateScheduleFromDrive(process.env.DRIVE_ID as string);
+  console.log("Clean up started");
+  await cleanupSchedule();
   // updateSchedule(process.env.DRIVE_ID);
 });
 

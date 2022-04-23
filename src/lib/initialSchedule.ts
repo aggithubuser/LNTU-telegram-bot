@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 
 // legacy using scraping
 
-export const initialPolutationSchedule = async () => {
+export const initialSchedule = async () => {
   let links = await getScheduleLinks();
   let parent;
   for (const link of links) {

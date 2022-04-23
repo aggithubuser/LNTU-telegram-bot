@@ -1,6 +1,7 @@
 import { Schedule } from "../db/models/schedule";
 import { Folder, folderContent } from "../driveApi";
 import mongoose from "mongoose";
+import subDays from "date-fns/subDays";
 
 export const queue = async (list: Folder) => {
   let stack: string[] = [];
@@ -52,4 +53,8 @@ export const updateScheduleFromDrive = async (id: string) => {
   console.log("DONE 1");
   await getFolder(await queue(content));
   console.log("DONE 2");
+};
+
+export const cleanupSchedule = async () => {
+  await Schedule.deleteMany({ updatedAt: { $lt: subDays(new Date(), 1) } });
 };

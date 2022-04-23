@@ -1,6 +1,6 @@
-export const SCHEDULE_URL = "http://lutsk-ntu.com.ua/uk/rozklad-luckogo-ntu";
-export const NEWS_URL = "http://lutsk-ntu.com.ua/uk/news";
-export const MAIN_URL = "http://lutsk-ntu.com.ua/";
+export const SCHEDULE_URL = "https://lntu.edu.ua/uk/studentu-0/navchannya/rozklad-zanyat-ta-ispytiv-lntu";
+export const NEWS_URL = "https://lntu.edu.ua/uk/media/news";
+export const MAIN_URL = "https://lntu.edu.ua";
 export const BACK_PREFIX = ".back";
 
 export const MAIN_KEYBOARD = {
