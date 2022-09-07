@@ -6,4 +6,3 @@
 * Typescript
 * [Telegraf](https://github.com/telegraf/telegraf)
 * MongoDB
-
