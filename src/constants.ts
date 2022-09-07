@@ -1,3 +1,4 @@
+export const REMOTE_SCHEDULE_URL = "https://lntu-rozklad.vercel.app/";
 export const SCHEDULE_URL = "https://lntu.edu.ua/uk/studentu-0/navchannya/rozklad-zanyat-ta-ispytiv-lntu";
 export const NEWS_URL = "https://lntu.edu.ua/uk/media/news";
 export const MAIN_URL = "https://lntu.edu.ua";

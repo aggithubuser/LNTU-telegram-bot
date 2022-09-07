@@ -9,12 +9,12 @@ import {
   CALLBACK_KEYBOARD,
   HELPER_TEXT,
   MAIN_KEYBOARD,
+  REMOTE_SCHEDULE_URL,
 } from "./constants";
 import { studyWeek } from "./date";
 import { Schedule } from "./db/models/schedule";
 import { folderContent } from "./driveApi";
 import { log } from "./lib/log";
-import { updateScheduleFromDrive, cleanupSchedule } from "./lib/updateScheduleFromDrive";
 import { getNewsLinks } from "./scrape";
 
 mongoose.connect(process.env.MONGO_REMOTE as string, {
@@ -28,11 +28,6 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", async () => {
   console.log("GREAT");
-  // initialPolutationSchedule();
-  await updateScheduleFromDrive(process.env.DRIVE_ID as string);
-  console.log("Clean up started");
-  await cleanupSchedule();
-  // updateSchedule(process.env.DRIVE_ID);
 });
 
 const token = process.env.BOT_TOKEN;
@@ -131,7 +126,7 @@ bot.command("start", (ctx) => {
     `Привіт, ${ctx.message.from.first_name}!`,
     Markup.keyboard([
       Markup.button.text(MAIN_KEYBOARD.NEWS_KEYBOARD),
-      Markup.button.text(MAIN_KEYBOARD.SCHEDULE_KEYBOARD),
+      Markup.button.webApp(MAIN_KEYBOARD.SCHEDULE_KEYBOARD, REMOTE_SCHEDULE_URL),
       Markup.button.text(MAIN_KEYBOARD.SCHEDULE_WEEK),
     ])
   );
@@ -168,14 +163,9 @@ bot.action(CALLBACK_KEYBOARD.SCHEDULE, async (ctx) => {
 });
 
 bot.hears(MAIN_KEYBOARD.SCHEDULE_KEYBOARD, async (ctx) => {
-  let main = await Schedule.find().where({ parent: null });
-  let mainKeyboard: InlineKeyboardButton[][] = [];
-  // await ctx.reply(MAIN_KEYBOARD.PICK_MENU);
-  main.forEach((i) => {
-    return mainKeyboard.push([Markup.button.callback(i.name as string, i._id)]);
-  });
-  await ctx.reply(MAIN_KEYBOARD.PICK_MENU, Markup.inlineKeyboard(mainKeyboard));
-  // await ctx.editMessageReplyMarkup({ inline_keyboard: mainKeyboard });
+  await ctx.reply(`Тепер розклад доступний по посиланню`, Markup.inlineKeyboard(
+    [Markup.button.webApp("Розклад", REMOTE_SCHEDULE_URL)]
+  ));
   log(ctx, false);
 });
 
@@ -191,6 +181,14 @@ bot.action(new RegExp(/\w/), async (ctx) => {
     parse_mode: "HTML",
   });
   await ctx.editMessageReplyMarkup({ inline_keyboard: items });
+  log(ctx, false);
+});
+
+bot.hears(new RegExp(/./), async (ctx) => {
+  ctx.reply(`Вибачте, але ми не розпізнали вашого запиту\nСпробуйте скористатись клавіатурою або командою \"\\start"`,
+  Markup.inlineKeyboard([
+    Markup.button.webApp(MAIN_KEYBOARD.SCHEDULE_KEYBOARD, REMOTE_SCHEDULE_URL),
+  ]));
   log(ctx, false);
 });
 
