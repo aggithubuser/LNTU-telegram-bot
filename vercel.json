@@ -1,10 +1,9 @@
 {
     "buildCommand": "npm run tsc",
-    "outputDirectory": "dist",
     "builds": [
-      { "src": "index.js", "use": "@vercel/node" }
+      { "src": "dist/index.js", "use": "@vercel/node" }
     ],
     "routes": [
-      { "src": "/(.*)", "dest": "/index.js" }
+      { "src": "/(.*)", "dest": "dist/index.js" }
     ]
   }
