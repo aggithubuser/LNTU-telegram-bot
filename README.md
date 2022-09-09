@@ -1,5 +1,5 @@
 # Оновлений Telegram чат-бот для студентів Луцького НТУ
-## ЛУЦЬКИЙ НАЦІОНАЛЬНИЙ ТЕХНІЧНИЙ УНІВЕРСИТЕТ http://lutsk-ntu.com.ua/uk
+## ЛУЦЬКИЙ НАЦІОНАЛЬНИЙ ТЕХНІЧНИЙ УНІВЕРСИТЕТ https://lntu.edu.ua/uk
 
 ###### @LNTU_Student_bot http://t.me/LNTU_Student_bot
 
